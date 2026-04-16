@@ -1,12 +1,33 @@
 <?php
 
-declare(strict_types=1);
+class Database {
+    private string $host = "localhost";
+    private string $db_name = "jobportal_db";
+    private string $username = "root";
+    private string $password = "";
+    public ?PDO $conn = null;
 
-return [
-    'host' => getenv('DB_HOST') ?: '127.0.0.1',
-    'port' => (int) (getenv('DB_PORT') ?: 3306),
-    'database' => getenv('DB_NAME') ?: 'jobportal',
-    'username' => getenv('DB_USER') ?: 'root',
-    'password' => getenv('DB_PASS') ?: '',
-    'charset' => 'utf8mb4',
-];
+    public function getConnection(): ?PDO {
+        if ($this->conn !== null) {
+            return $this->conn;
+        }
+
+        try {
+            $dsn = "mysql:host={$this->host};dbname={$this->db_name};charset=utf8mb4";
+            $this->conn = new PDO($dsn, $this->username, $this->password, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            ]);
+        } catch (PDOException $exception) {
+            http_response_code(500);
+            echo json_encode([
+                "success" => false,
+                "message" => "Database connection error",
+                "error" => $exception->getMessage(),
+            ]);
+            exit();
+        }
+
+        return $this->conn;
+    }
+}
