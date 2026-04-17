@@ -3,14 +3,18 @@
 @tailwind components;
 @tailwind utilities;
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
+  --text: #1f2937;
+  --text-h: #0f172a;
+  --bg: #fdfdfd;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
+  --brand-blue: #3172B1;
+  --brand-blue-light: #50ADDD;
+  --brand-orange: #F99F1F;
+  --brand-orange-soft: #F5D89B;
+  --accent: #3172B1;
+  --accent-bg: rgba(81, 139, 210, 0.12);
+  --accent-border: rgba(81, 139, 210, 0.35);
   --social-bg: rgba(244, 243, 236, 0.5);
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
@@ -55,11 +59,9 @@
 }
 
 #root {
-  width: 1126px;
+  width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -68,6 +70,8 @@
 
 body {
   margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
 }
 
 h1,
