@@ -15,7 +15,7 @@ import AdminDashboard from './pages/admin/Dashboard'
 import CompanyDashboard from './pages/company/Dashboard'
 import CandidateDashboard from './pages/candidate/Dashboard'
 import type { ReactNode } from 'react'
-
+import './index.css'
 function ProtectedRoute({
   children,
   roles,
