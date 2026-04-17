@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
-import { LayoutDashboard, LogOut, Menu, Rocket, X } from 'lucide-react'
+import { LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
+import { logoImage } from '../../assets/images'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -24,10 +25,8 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-white shadow-lg">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-        <Link to="/" className="flex items-center gap-2 text-xl font-bold text-slate-900">
-          <motion.div whileHover={{ rotate: 360 }} transition={{ duration: 0.5 }}>
-            <Rocket className="h-8 w-8 text-[#3172B1]" />
-          </motion.div>
+        <Link to="/" className="flex items-center gap-3 text-xl font-bold text-slate-900">
+          <img src={logoImage} alt="HireHub logo" className="h-10 w-auto rounded-full border border-slate-200 bg-white p-1" />
           <span>
             <span className="text-slate-900">Hire</span>
             <span className="text-[#F99F1F]">Hub</span>

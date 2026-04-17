@@ -11,7 +11,12 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react'
-import heroImage from '../../assets/hero.png'
+import Hero from '../../components/public/Hero'
+import MotivationalCards from '../../components/public/MotivationalCards'
+import JobPortals from '../../components/public/JobPortals'
+import MotivationalQuote from '../../components/common/MotivationalQuote'
+import '../../styles/animations.css'
+import { heroImage } from '../../assets/images'
 import { jobService } from '../../services/job.service'
 import type { Job } from '../../types'
 
@@ -33,7 +38,7 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    const words = ['Build the Future of Hiring', 'Smart & Scalable', 'Made for India', 'AI-Powered Job Portal']
+    const words = ['Build the Future of Hiring', 'Smart & Scalable', 'Made for India', 'AI-Powered HireHub']
     const current = words[typingIndex % words.length]
 
     const timeout = setTimeout(() => {
@@ -115,7 +120,7 @@ export default function Home() {
               className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#F5D89B]/20 px-4 py-2 text-sm text-slate-950 shadow-lg shadow-[#3172B1]/20 backdrop-blur"
             >
               <Sparkles className="h-5 w-5 text-[#F99F1F]" />
-              AI-Powered Job Portal for modern hiring
+              AI-Powered HireHub for modern hiring
             </motion.div>
 
             <h1 className="text-5xl font-black leading-tight tracking-tight sm:text-6xl lg:text-7xl">
@@ -280,6 +285,11 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+
+      <Hero />
+      <MotivationalCards />
+      <JobPortals />
+      <MotivationalQuote />
 
       <section className="bg-white py-20" ref={ref}>
         <div className="mx-auto max-w-7xl px-6">
