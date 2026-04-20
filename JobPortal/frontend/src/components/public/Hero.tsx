@@ -46,16 +46,24 @@ const Hero: React.FC = () => {
           zIndex: 1,
         }}
       >
-        <h1
-          style={{
-            fontSize: '3.5rem',
-            marginBottom: '1rem',
-            animation: 'fadeInUp 1s ease',
-          }}
-        >
-          Build the Future of Hiring: <span style={{ color: '#4CAF50' }}>Smart, Scalable & Made for India</span>
-        </h1>
-
+   <h1
+  style={{
+    fontSize: '3.5rem',
+    marginBottom: '1rem',
+    animation: 'fadeInUp 1s ease',
+  }}
+>
+  Build the Future of Hiring:{' '}
+  <span
+    style={{
+      color: '#4CAF50',
+      padding: '2rem 3rem',
+      display: 'inline-block',
+    }}
+  >
+    Smart, Scalable 
+  </span>
+</h1>
         <div
           style={{
             fontSize: '2rem',
@@ -64,7 +72,7 @@ const Hero: React.FC = () => {
             animation: 'fadeInUp 1s ease 0.2s both',
           }}
         >
-          <span style={{ color: '#FF6B35' }}>AI</span> HIREHUB
+          <span style={{ color: '#FF6B35' }}>AI   HIREHUB  </span >
         </div>
 
         <button

@@ -12,7 +12,10 @@ import Contact from './pages/public/Contact'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import AdminDashboard from './pages/admin/Dashboard'
+import AdminJobs from './pages/admin/Jobs'
 import CompanyDashboard from './pages/company/Dashboard'
+import CompanyProfile from './pages/company/Profile'
+import PostJob from './pages/company/PostJob'
 import CandidateDashboard from './pages/candidate/Dashboard'
 import type { ReactNode } from 'react'
 import './index.css'
@@ -48,7 +51,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route
-                path="/admin/*"
+                path="/admin"
                 element={
                   <ProtectedRoute roles={['admin']}>
                     <AdminDashboard />
@@ -56,10 +59,34 @@ function App() {
                 }
               />
               <Route
-                path="/company/*"
+                path="/admin/jobs"
+                element={
+                  <ProtectedRoute roles={['admin']}>
+                    <AdminJobs />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/company"
                 element={
                   <ProtectedRoute roles={['company']}>
                     <CompanyDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/company/profile"
+                element={
+                  <ProtectedRoute roles={['company']}>
+                    <CompanyProfile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/company/post-job"
+                element={
+                  <ProtectedRoute roles={['company']}>
+                    <PostJob />
                   </ProtectedRoute>
                 }
               />

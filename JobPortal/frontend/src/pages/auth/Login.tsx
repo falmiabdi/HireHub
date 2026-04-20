@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import toast from 'react-hot-toast'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -14,7 +15,30 @@ export default function Login() {
     setLoading(true)
     try {
       await login(email, password)
-      navigate('/')
+      toast.success('Login successful!')
+      // Get the user from localStorage since login doesn't return it directly
+      const userStr = localStorage.getItem('user')
+      if (userStr) {
+        const user = JSON.parse(userStr)
+        // Redirect based on role
+        switch (user.role) {
+          case 'admin':
+            navigate('/admin')
+            break
+          case 'company':
+            navigate('/company')
+            break
+          case 'candidate':
+            navigate('/candidate')
+            break
+          default:
+            navigate('/')
+        }
+      } else {
+        navigate('/')
+      }
+    } catch (error) {
+      toast.error('Login failed. Please check your credentials.')
     } finally {
       setLoading(false)
     }
