@@ -45,6 +45,8 @@ export interface CompanyProfile {
   description?: string
   logo_path?: string
   address?: string
+  ceo_name?: string
+  director_name?: string
   status: string
 }
 

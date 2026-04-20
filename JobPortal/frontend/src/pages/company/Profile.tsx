@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Building2, Globe, Phone, MapPin, Users, FileText, Save, Loader2, Upload } from 'lucide-react'
+import { Building2, Globe, Phone, MapPin, Users, FileText, Save, Loader2, Upload, User, Crown } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { companyService, type CompanyProfile } from '../../services/company.service'
 
@@ -154,6 +154,42 @@ export default function CompanyProfilePage() {
                 onChange={e => setFormData(prev => ({ ...prev, website: e.target.value }))}
                 className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="https://www.company.com"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Leadership Information */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Leadership Information
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                <Crown className="h-4 w-4 text-amber-500" />
+                CEO / Chief Executive Officer
+              </label>
+              <input
+                type="text"
+                value={formData.ceo_name || ''}
+                onChange={e => setFormData(prev => ({ ...prev, ceo_name: e.target.value }))}
+                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., John Smith"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                <User className="h-4 w-4" />
+                Director / Managing Director
+              </label>
+              <input
+                type="text"
+                value={formData.director_name || ''}
+                onChange={e => setFormData(prev => ({ ...prev, director_name: e.target.value }))}
+                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., Jane Doe"
               />
             </div>
           </div>

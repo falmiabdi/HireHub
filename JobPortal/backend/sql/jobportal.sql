@@ -39,6 +39,8 @@ CREATE TABLE companies (
     description TEXT,
     location VARCHAR(255),
     contact_email VARCHAR(100),
+    ceo_name VARCHAR(100),
+    director_name VARCHAR(100),
     verified_status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
