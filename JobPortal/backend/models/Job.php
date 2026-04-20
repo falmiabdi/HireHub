@@ -15,7 +15,7 @@ class Job {
         $query = "SELECT j.*, c.company_name, c.logo_path
                   FROM {$this->table} j
                   INNER JOIN companies c ON j.company_id = c.company_id
-                  WHERE j.status = 'open'";
+                  WHERE j.status = 'open' AND j.approval_status = 'approved'";
 
         if (!empty($filters["search"])) {
             $query .= " AND MATCH(j.title, j.description, j.requirements) AGAINST(:search IN NATURAL LANGUAGE MODE)";
@@ -41,11 +41,15 @@ class Job {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getJobById(int $jobId) {
+    public function getJobById(int $jobId, bool $requireApproved = true) {
         $query = "SELECT j.*, c.company_name, c.logo_path, c.website
                   FROM {$this->table} j
                   INNER JOIN companies c ON j.company_id = c.company_id
-                  WHERE j.job_id = :job_id LIMIT 1";
+                  WHERE j.job_id = :job_id";
+        if ($requireApproved) {
+            $query .= " AND j.approval_status = 'approved'";
+        }
+        $query .= " LIMIT 1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":job_id", $jobId);
         $stmt->execute();
@@ -66,10 +70,10 @@ class Job {
     public function create(array $data) {
         $query = "INSERT INTO {$this->table}
                   (company_id, title, description, requirements, location, job_type, experience_level,
-                   salary_min, salary_max, skills_required, benefits, deadline)
+                   salary_min, salary_max, skills_required, benefits, deadline, approval_status)
                   VALUES
                   (:company_id, :title, :description, :requirements, :location, :job_type, :experience_level,
-                   :salary_min, :salary_max, :skills_required, :benefits, :deadline)";
+                   :salary_min, :salary_max, :skills_required, :benefits, :deadline, 'pending')";
         $stmt = $this->conn->prepare($query);
         if ($stmt->execute([
             ":company_id" => $data["company_id"],
@@ -88,6 +92,41 @@ class Job {
             return $this->conn->lastInsertId();
         }
         return false;
+    }
+
+    public function getPendingJobs(int $limit = 20, int $offset = 0): array {
+        $query = "SELECT j.*, c.company_name, c.logo_path, u.email as company_email
+                  FROM {$this->table} j
+                  INNER JOIN companies c ON j.company_id = c.company_id
+                  INNER JOIN users u ON c.user_id = u.user_id
+                  WHERE j.approval_status = 'pending'
+                  ORDER BY j.posted_date DESC
+                  LIMIT :limit OFFSET :offset";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+        $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function countPending(): int {
+        $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM {$this->table} WHERE approval_status = 'pending'");
+        $stmt->execute();
+        return (int) $stmt->fetch()["total"];
+    }
+
+    public function approveJob(int $jobId, int $adminId): bool {
+        $stmt = $this->conn->prepare("UPDATE {$this->table} 
+                  SET approval_status = 'approved', approved_by = :admin_id, approved_at = NOW() 
+                  WHERE job_id = :job_id");
+        return $stmt->execute([":job_id" => $jobId, ":admin_id" => $adminId]);
+    }
+
+    public function rejectJob(int $jobId, int $adminId, string $reason): bool {
+        $stmt = $this->conn->prepare("UPDATE {$this->table} 
+                  SET approval_status = 'rejected', approved_by = :admin_id, approved_at = NOW(), rejection_reason = :reason 
+                  WHERE job_id = :job_id");
+        return $stmt->execute([":job_id" => $jobId, ":admin_id" => $adminId, ":reason" => $reason]);
     }
 
     public function update(int $jobId, int $companyId, array $data): bool {
@@ -184,7 +223,7 @@ class Job {
     }
 
     public function getRecommendedJobs(int $candidateId, int $limit): array {
-        $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE status = 'open' ORDER BY posted_date DESC LIMIT :limit");
+        $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE status = 'open' AND approval_status = 'approved' ORDER BY posted_date DESC LIMIT :limit");
         $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -203,7 +242,9 @@ class Job {
     }
 
     public function countActive(): int {
-        return $this->countAll("open");
+        $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM {$this->table} WHERE status = 'open' AND approval_status = 'approved'");
+        $stmt->execute();
+        return (int) $stmt->fetch()["total"];
     }
 
     public function getRecent(int $limit): array {
@@ -213,13 +254,18 @@ class Job {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getAllJobs(int $limit, int $offset, ?string $status = null): array {
+    public function getAllJobs(int $limit, int $offset, ?string $status = null, ?string $approvalStatus = null): array {
         $query = "SELECT j.*, c.company_name FROM {$this->table} j
-                  LEFT JOIN companies c ON j.company_id = c.company_id";
+                  LEFT JOIN companies c ON j.company_id = c.company_id
+                  WHERE 1=1";
         $params = [];
         if ($status) {
-            $query .= " WHERE j.status = :status";
+            $query .= " AND j.status = :status";
             $params[":status"] = $status;
+        }
+        if ($approvalStatus) {
+            $query .= " AND j.approval_status = :approval_status";
+            $params[":approval_status"] = $approvalStatus;
         }
         $query .= " ORDER BY j.posted_date DESC LIMIT :limit OFFSET :offset";
         $stmt = $this->conn->prepare($query);
@@ -230,6 +276,12 @@ class Job {
         $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function countByApprovalStatus(string $approvalStatus): int {
+        $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM {$this->table} WHERE approval_status = :approval_status");
+        $stmt->execute([":approval_status" => $approvalStatus]);
+        return (int) $stmt->fetch()["total"];
     }
 
     public function getJobsByType(): array {

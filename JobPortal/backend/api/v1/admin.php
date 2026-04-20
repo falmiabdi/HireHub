@@ -37,6 +37,7 @@ class AdminAPI {
                 elseif ($action === 'users') $this->getUsers();
                 elseif ($action === 'companies') $this->getCompanies();
                 elseif ($action === 'jobs') $this->getJobs();
+                elseif ($action === 'pending_jobs') $this->getPendingJobs();
                 elseif ($action === 'analytics') $this->getAnalytics();
                 elseif ($action === 'activity_logs') $this->getActivityLogs();
                 else $this->sendError('Invalid action', 400);
@@ -44,6 +45,8 @@ class AdminAPI {
             case 'PUT':
                 if ($action === 'verify_company') $this->verifyCompany();
                 elseif ($action === 'update_user_status') $this->updateUserStatus();
+                elseif ($action === 'approve_job') $this->approveJob();
+                elseif ($action === 'reject_job') $this->rejectJob();
                 else $this->sendError('Invalid action', 400);
                 break;
             case 'DELETE':
@@ -63,6 +66,7 @@ class AdminAPI {
             'total_candidates' => $this->user_model->countByRole('candidate'),
             'total_jobs' => $this->job_model->countAll(),
             'active_jobs' => $this->job_model->countActive(),
+            'pending_jobs' => $this->job_model->countPending(),
             'total_applications' => $this->application_model->countAll(),
             'pending_companies' => $this->company_model->countPending(),
             'recent_users' => $this->user_model->getRecent(10),
@@ -125,12 +129,53 @@ class AdminAPI {
 
     private function getJobs(): void {
         $status = $_GET['status'] ?? null;
+        $approvalStatus = $_GET['approval_status'] ?? null;
         $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
         $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 20;
         $offset = ($page - 1) * $limit;
-        $jobs = $this->job_model->getAllJobs($limit, $offset, $status);
+        $jobs = $this->job_model->getAllJobs($limit, $offset, $status, $approvalStatus);
         $total = $this->job_model->countAll($status);
         $this->sendSuccess(compact('jobs', 'total', 'page', 'limit'));
+    }
+
+    private function getPendingJobs(): void {
+        $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+        $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 20;
+        $offset = ($page - 1) * $limit;
+        $jobs = $this->job_model->getPendingJobs($limit, $offset);
+        $total = $this->job_model->countPending();
+        $this->sendSuccess(compact('jobs', 'total', 'page', 'limit'));
+    }
+
+    private function approveJob(): void {
+        $data = json_decode(file_get_contents("php://input"), true) ?? [];
+        if (empty($data['job_id'])) $this->sendError('Job ID required', 400);
+        
+        // Get admin user ID from token
+        $user = AuthMiddleware::validateToken();
+        $adminId = (int) $user['user_id'];
+        
+        if ($this->job_model->approveJob((int) $data['job_id'], $adminId)) {
+            $this->activity_model->log(null, 'job_approved', "Approved job ID: {$data['job_id']}");
+            $this->sendSuccess(null, 'Job approved successfully');
+        }
+        $this->sendError('Failed to approve job', 500);
+    }
+
+    private function rejectJob(): void {
+        $data = json_decode(file_get_contents("php://input"), true) ?? [];
+        if (empty($data['job_id'])) $this->sendError('Job ID required', 400);
+        $reason = $data['reason'] ?? 'No reason provided';
+        
+        // Get admin user ID from token
+        $user = AuthMiddleware::validateToken();
+        $adminId = (int) $user['user_id'];
+        
+        if ($this->job_model->rejectJob((int) $data['job_id'], $adminId, $reason)) {
+            $this->activity_model->log(null, 'job_rejected', "Rejected job ID: {$data['job_id']}. Reason: $reason");
+            $this->sendSuccess(null, 'Job rejected successfully');
+        }
+        $this->sendError('Failed to reject job', 500);
     }
 
     private function deleteJob(): void {

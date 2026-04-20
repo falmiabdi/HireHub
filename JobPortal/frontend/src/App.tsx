@@ -17,6 +17,7 @@ import CompanyDashboard from './pages/company/Dashboard'
 import CompanyProfile from './pages/company/Profile'
 import PostJob from './pages/company/PostJob'
 import CandidateDashboard from './pages/candidate/Dashboard'
+import CandidateProfile from './pages/candidate/Profile'
 import type { ReactNode } from 'react'
 import './index.css'
 function ProtectedRoute({
@@ -91,10 +92,18 @@ function App() {
                 }
               />
               <Route
-                path="/candidate/*"
+                path="/candidate"
                 element={
                   <ProtectedRoute roles={['candidate']}>
                     <CandidateDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/candidate/profile"
+                element={
+                  <ProtectedRoute roles={['candidate']}>
+                    <CandidateProfile />
                   </ProtectedRoute>
                 }
               />

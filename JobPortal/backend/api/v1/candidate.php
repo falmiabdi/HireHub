@@ -82,12 +82,10 @@ class CandidateAPI {
         ];
         $this->sendSuccess($stats);
     }
-
     private function applyForJob(): void {
         $job_id = isset($_GET['job_id']) ? (int) $_GET['job_id'] : 0;
         if (!$job_id) $this->sendError('Job ID required', 400);
         if ($this->application_model->hasApplied($job_id, $this->candidate_id)) $this->sendError('You have already applied for this job', 400);
-
         $data = json_decode(file_get_contents("php://input"), true) ?? [];
         $companyId = $this->getCompanyIdFromJob($job_id);
         if (!$companyId) $this->sendError('Invalid job', 404);

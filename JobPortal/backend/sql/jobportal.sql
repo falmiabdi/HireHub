@@ -57,6 +57,10 @@ CREATE TABLE jobs (
     posted_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     deadline DATE,
     status ENUM('open', 'closed', 'expired') DEFAULT 'open',
+    approval_status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    approved_by INT,
+    approved_at DATETIME,
+    rejection_reason TEXT,
     views_count INT DEFAULT 0,
     applications_count INT DEFAULT 0,
     is_featured BOOLEAN DEFAULT FALSE,
@@ -82,6 +86,6 @@ CREATE TABLE job_applications (
 
 INSERT INTO users (email, password_hash, role, status, email_verified)
 VALUES
-('admin@jobportal.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 'active', TRUE),
+('admin@jobportal.com', '$2b$10$UWYWtrmkAOzdbgV37.XSI.PfT0xDBpgny8ykAkihn5wr.9DroGLma', 'admin', 'active', TRUE),
 ('company@techcorp.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'company', 'active', TRUE),
 ('candidate@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'candidate', 'active', TRUE);

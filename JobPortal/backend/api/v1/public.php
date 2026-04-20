@@ -1,6 +1,11 @@
 <?php
+// NO whitespace before this
 
-require_once __DIR__ . "/../../config/cors.php";
+header('Content-Type: application/json; charset=UTF-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
 require_once __DIR__ . "/../../helpers/Response.php";
 require_once __DIR__ . "/../../models/Job.php";
 require_once __DIR__ . "/../../models/Company.php";
@@ -20,19 +25,24 @@ class PublicAPI {
         }
 
         $endpoint = $_GET["endpoint"] ?? "";
+
         switch ($endpoint) {
             case "jobs":
                 $this->getJobs();
                 break;
+
             case "job":
                 $this->getJobDetail();
                 break;
+
             case "companies":
                 $this->getCompanies();
                 break;
+
             case "search":
                 $this->searchJobs();
                 break;
+
             default:
                 Response::error("Invalid endpoint", 400);
         }
@@ -49,18 +59,27 @@ class PublicAPI {
         ];
 
         $jobs = $this->jobModel->getPublicJobs($limit, $offset, $filters);
-        Response::success(["jobs" => $jobs, "page" => $page, "limit" => $limit]);
+
+        Response::success([
+            "jobs" => $jobs,
+            "page" => $page,
+            "limit" => $limit
+        ]);
     }
 
     private function getJobDetail(): void {
         $jobId = isset($_GET["id"]) ? (int) $_GET["id"] : 0;
+
         if (!$jobId) {
             Response::error("Job ID required", 400);
         }
+
         $job = $this->jobModel->getJobById($jobId);
+
         if (!$job) {
             Response::error("Job not found", 404);
         }
+
         Response::success(["job" => $job]);
     }
 
@@ -72,7 +91,9 @@ class PublicAPI {
     private function searchJobs(): void {
         $keyword = $_GET["keyword"] ?? "";
         $location = $_GET["location"] ?? "";
+
         $results = $this->jobModel->searchJobs($keyword, $location);
+
         Response::success(["results" => $results]);
     }
 }

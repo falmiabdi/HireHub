@@ -39,6 +39,7 @@ export interface Application {
 export interface CandidateProfile {
   profile_id: number
   user_id: number
+  full_name?: string
   phone?: string
   country?: string
   address?: string
@@ -47,6 +48,7 @@ export interface CandidateProfile {
   education?: string
   gender?: string
   summary?: string
+  skills?: string
   resume_path?: string
   profile_picture?: string
 }

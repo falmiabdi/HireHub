@@ -6,13 +6,33 @@ require_once __DIR__ . "/../helpers/Response.php";
 class AuthMiddleware {
     public static function validateToken(): array {
         $headers = getallheaders();
-        $authHeader = $headers["Authorization"] ?? "";
+        
+        // Handle case-insensitive header lookup
+        $authHeader = "";
+        foreach ($headers as $key => $value) {
+            if (strcasecmp($key, "Authorization") === 0) {
+                $authHeader = $value;
+                break;
+            }
+        }
+        
+        // Fallback to apache_request_headers if available
+        if (!$authHeader && function_exists("apache_request_headers")) {
+            $apacheHeaders = apache_request_headers();
+            foreach ($apacheHeaders as $key => $value) {
+                if (strcasecmp($key, "Authorization") === 0) {
+                    $authHeader = $value;
+                    break;
+                }
+            }
+        }
 
         if (!$authHeader) {
             Response::error("No token provided", 401);
         }
 
         $token = str_replace("Bearer ", "", $authHeader);
+        $token = trim($token);
 
         try {
             return self::verifyJWT($token);

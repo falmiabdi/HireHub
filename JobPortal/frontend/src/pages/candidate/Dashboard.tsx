@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FileText, Heart, CheckCircle, XCircle, Clock, Search, MapPin, Building2, Loader2, Bookmark } from 'lucide-react'
+import { FileText, Heart, CheckCircle, XCircle, Clock, Search, MapPin, Building2, Loader2, Bookmark, User } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { candidateService, type CandidateDashboard as DashboardData, type Job } from '../../services/candidate.service'
 
@@ -79,6 +79,38 @@ export default function CandidateDashboard() {
             <StatCard icon={CheckCircle} label="Shortlisted" value={dashboard.shortlisted_applications} color="green" />
             <StatCard icon={XCircle} label="Rejected" value={dashboard.rejected_applications} color="red" />
             <StatCard icon={Bookmark} label="Saved Jobs" value={dashboard.saved_jobs_count} color="purple" />
+          </div>
+
+          {/* Quick Actions */}
+          <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <QuickActionCard
+              icon={User}
+              title="My Profile"
+              description="Update your profile and resume"
+              link="/candidate/profile"
+              color="blue"
+            />
+            <QuickActionCard
+              icon={FileText}
+              title="My Applications"
+              description="View all your job applications"
+              link="/candidate/applications"
+              color="green"
+            />
+            <QuickActionCard
+              icon={Bookmark}
+              title="Saved Jobs"
+              description="Jobs you've bookmarked"
+              link="/jobs?saved=true"
+              color="purple"
+            />
+            <QuickActionCard
+              icon={Search}
+              title="Browse Jobs"
+              description="Find new opportunities"
+              link="/jobs"
+              color="amber"
+            />
           </div>
 
           <div className="mb-8 rounded-lg bg-gradient-to-r from-blue-600 to-blue-800 p-6 text-white shadow-lg">
@@ -177,6 +209,29 @@ export default function CandidateDashboard() {
         </>
       )}
     </div>
+  )
+}
+
+function QuickActionCard({ icon: Icon, title, description, link, color }: { icon: typeof User; title: string; description: string; link: string; color: string }) {
+  const colorClasses: Record<string, string> = {
+    blue: 'bg-blue-50 text-blue-600 hover:bg-blue-100',
+    green: 'bg-green-50 text-green-600 hover:bg-green-100',
+    purple: 'bg-purple-50 text-purple-600 hover:bg-purple-100',
+    amber: 'bg-amber-50 text-amber-600 hover:bg-amber-100',
+  }
+
+  return (
+    <Link to={link} className={`rounded-lg border bg-white p-4 shadow-sm transition-colors ${colorClasses[color]}`}>
+      <div className="flex items-start gap-3">
+        <div className={`rounded-lg p-2 bg-white`}>
+          <Icon className="h-5 w-5" />
+        </div>
+        <div>
+          <h3 className="font-semibold text-gray-900">{title}</h3>
+          <p className="text-sm text-gray-600">{description}</p>
+        </div>
+      </div>
+    </Link>
   )
 }
 
