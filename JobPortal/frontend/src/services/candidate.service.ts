@@ -51,6 +51,12 @@ export interface CandidateProfile {
   skills?: string
   resume_path?: string
   profile_image?: string
+  expected_salary?: string
+  experience_years?: string
+  education_level?: string
+  availability_date?: string
+  portfolio_url?: string
+  linkedin_url?: string
 }
 
 export const candidateService = {
@@ -110,5 +116,9 @@ export const candidateService = {
 
   getJobRecommendations(limit = 10): Promise<{ jobs: Job[] }> {
     return api.get(`/candidate.php?action=job_recommendations&limit=${limit}`).then(r => r.data.data)
+  },
+
+  updateApplication(applicationId: number, applicationData: { cover_letter?: string; expected_salary?: string }): Promise<void> {
+    return api.put(`/candidate.php?action=update_application&application_id=${applicationId}`, applicationData)
   },
 }

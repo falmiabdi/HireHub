@@ -18,6 +18,8 @@ import CompanyDashboard from './pages/company/Dashboard'
 import CompanyProfile from './pages/company/Profile'
 import CompanyJobs from './pages/company/Jobs'
 import PostJob from './pages/company/PostJob'
+import Applicants from './pages/company/Applicants'
+import ApplyJob from './pages/candidate/ApplyJob'
 import CandidateDashboard from './pages/candidate/Dashboard'
 import CandidateProfile from './pages/candidate/Profile'
 import type { ReactNode } from 'react'
@@ -135,6 +137,22 @@ function AppLayout({ sidebarOpen, setSidebarOpen }: { sidebarOpen: boolean; setS
                 element={
                   <ProtectedRoute roles={['company']}>
                     <PostJob />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/company/applicants"
+                element={
+                  <ProtectedRoute roles={['company']}>
+                    <Applicants />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/jobs/:id/apply"
+                element={
+                  <ProtectedRoute roles={['candidate']}>
+                    <ApplyJob />
                   </ProtectedRoute>
                 }
               />

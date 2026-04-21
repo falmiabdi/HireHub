@@ -33,7 +33,7 @@ class CandidateProfile {
     }
 
     public function update(int $profileId, array $data): bool {
-        $allowed = ["full_name", "phone", "country", "address", "field", "experience", "education", "gender", "summary", "skills", "resume_path", "profile_image", "profile_picture"];
+        $allowed = ["full_name", "phone", "country", "address", "field", "experience", "education", "gender", "summary", "skills", "resume_path", "profile_image", "profile_picture", "expected_salary", "experience_years", "education_level", "availability_date", "portfolio_url", "linkedin_url"];
         $sets = [];
         $params = [":profile_id" => $profileId];
         foreach ($allowed as $field) {

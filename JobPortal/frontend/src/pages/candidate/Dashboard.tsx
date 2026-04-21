@@ -19,13 +19,19 @@ export default function CandidateDashboard() {
     try {
       const data = await candidateService.getDashboard()
       setDashboard(data)
+    } catch (error: any) {
+      console.error('Failed to load dashboard:', error)
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to load dashboard data'
+      toast.error(errorMessage)
+    } finally {
+      setLoading(false)
+    }
+    // Try to load saved jobs separately
+    try {
       const saved = await candidateService.getSavedJobs(1, 100)
       setSavedJobIds(new Set(saved.jobs.map(j => j.job_id)))
     } catch (error) {
-      console.error('Failed to load dashboard:', error)
-      toast.error('Failed to load dashboard data')
-    } finally {
-      setLoading(false)
+      console.error('Failed to load saved jobs:', error)
     }
   }
 

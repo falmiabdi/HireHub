@@ -27,10 +27,18 @@ export interface Application {
   application_id: number
   candidate_name: string
   candidate_email: string
+  candidate_phone?: string
+  candidate_resume?: string
   job_title: string
+  job_id: number
   cover_letter: string
   expected_salary?: string
   resume_used?: string
+  experience_years?: string
+  education_level?: string
+  availability_date?: string
+  portfolio_url?: string
+  linkedin_url?: string
   status: string
   applied_at: string
 }
@@ -100,5 +108,9 @@ export const companyService = {
     return api.post('/company.php?action=upload_logo', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then(r => r.data.data)
+  },
+
+  sendMessageToCandidate(applicationId: number, message: string): Promise<void> {
+    return api.post('/company.php?action=send_message', { application_id: applicationId, message })
   },
 }

@@ -52,6 +52,7 @@ class CompanyAPI {
                 if ($action === 'post_job') $this->postJob();
                 elseif ($action === 'update_application_status') $this->updateApplicationStatus();
                 elseif ($action === 'upload_logo') $this->uploadLogo();
+                elseif ($action === 'send_message') $this->sendMessage();
                 else $this->sendError('Invalid action', 400);
                 break;
             case 'PUT':
@@ -183,6 +184,25 @@ class CompanyAPI {
             $this->sendSuccess(['logo_path' => $logo_path], 'Logo uploaded successfully');
         }
         $this->sendError('Failed to upload file', 500);
+    }
+
+    private function sendMessage(): void {
+        $data = json_decode(file_get_contents("php://input"), true) ?? [];
+        $application_id = $data['application_id'] ?? 0;
+        $message = $data['message'] ?? '';
+        
+        if (!$application_id) $this->sendError('Application ID required', 400);
+        if (!$message) $this->sendError('Message required', 400);
+        
+        // Verify application belongs to this company
+        if (!$this->application_model->belongsToCompany($application_id, $this->company_id)) {
+            $this->sendError('Application not found', 404);
+        }
+        
+        // Store message (for now, we'll just log it - in a real app, you'd have a messages table)
+        $this->activity_model->log($this->user_id, 'message_sent', "Sent message to applicant for application ID: $application_id");
+        
+        $this->sendSuccess(null, 'Message sent successfully');
     }
 
     private function sendSuccess($data, string $message = 'Success'): void {

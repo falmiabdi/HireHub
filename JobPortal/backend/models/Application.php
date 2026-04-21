@@ -12,9 +12,9 @@ class Application {
 
     public function create(array $data) {
         $query = "INSERT INTO job_applications
-                  (job_id, candidate_id, company_id, cover_letter, resume_used, expected_salary, status)
+                  (job_id, candidate_id, company_id, cover_letter, resume_used, expected_salary, experience_years, education_level, availability_date, portfolio_url, linkedin_url, status)
                   VALUES
-                  (:job_id, :candidate_id, :company_id, :cover_letter, :resume_used, :expected_salary, 'pending')";
+                  (:job_id, :candidate_id, :company_id, :cover_letter, :resume_used, :expected_salary, :experience_years, :education_level, :availability_date, :portfolio_url, :linkedin_url, 'pending')";
         $stmt = $this->conn->prepare($query);
         if ($stmt->execute([
             ":job_id" => $data["job_id"],
@@ -23,6 +23,11 @@ class Application {
             ":cover_letter" => $data["cover_letter"] ?? "",
             ":resume_used" => $data["resume_used"] ?? null,
             ":expected_salary" => $data["expected_salary"] ?? null,
+            ":experience_years" => $data["experience_years"] ?? null,
+            ":education_level" => $data["education_level"] ?? null,
+            ":availability_date" => $data["availability_date"] ?? null,
+            ":portfolio_url" => $data["portfolio_url"] ?? null,
+            ":linkedin_url" => $data["linkedin_url"] ?? null,
         ])) {
             return $this->conn->lastInsertId();
         }
@@ -52,10 +57,11 @@ class Application {
     }
 
     public function getCompanyApplications(int $companyId, ?string $status, int $limit, int $offset): array {
-        $query = "SELECT a.*, j.title as job_title, cp.full_name as candidate_name
+        $query = "SELECT a.*, j.title as job_title, j.job_id, cp.full_name as candidate_name, cp.phone as candidate_phone, u.email as candidate_email, cp.resume_path as candidate_resume
                   FROM job_applications a
                   INNER JOIN jobs j ON a.job_id = j.job_id
                   LEFT JOIN candidate_profiles cp ON a.candidate_id = cp.profile_id
+                  LEFT JOIN users u ON a.candidate_id = u.user_id
                   WHERE a.company_id = :company_id";
         $params = [":company_id" => $companyId];
         if ($status) {

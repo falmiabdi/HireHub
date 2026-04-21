@@ -59,6 +59,7 @@ class CandidateAPI {
                 break;
             case 'PUT':
                 if ($action === 'update_profile') $this->updateProfile();
+                elseif ($action === 'update_application') $this->updateApplication();
                 else $this->sendError('Invalid action', 400);
                 break;
             case 'DELETE':
@@ -98,6 +99,11 @@ class CandidateAPI {
             'cover_letter' => $data['cover_letter'] ?? '',
             'expected_salary' => $data['expected_salary'] ?? null,
             'resume_used' => $data['resume_used'] ?? null,
+            'experience_years' => $data['experience_years'] ?? null,
+            'education_level' => $data['education_level'] ?? null,
+            'availability_date' => $data['availability_date'] ?? null,
+            'portfolio_url' => $data['portfolio_url'] ?? null,
+            'linkedin_url' => $data['linkedin_url'] ?? null,
         ]);
 
         if ($application_id) {
@@ -197,6 +203,57 @@ class CandidateAPI {
             $this->sendSuccess(['profile_image' => $profile_image], 'Profile image uploaded successfully');
         }
         $this->sendError('Failed to upload file', 500);
+    }
+
+    private function updateApplication(): void {
+        $application_id = isset($_GET['application_id']) ? (int) $_GET['application_id'] : 0;
+        if (!$application_id) $this->sendError('Application ID required', 400);
+        
+        // Check if application belongs to this candidate
+        if (!$this->application_model->belongsToCandidate($application_id, $this->candidate_id)) {
+            $this->sendError('Application not found', 404);
+        }
+        
+        // Check if application can be updated (within 4 hours)
+        $stmt = $this->conn->prepare("SELECT applied_at FROM job_applications WHERE application_id = ?");
+        $stmt->execute([$application_id]);
+        $application = $stmt->fetch();
+        
+        if (!$application) {
+            $this->sendError('Application not found', 404);
+        }
+        
+        $applied_at = new DateTime($application['applied_at']);
+        $now = new DateTime();
+        $interval = $now->diff($applied_at);
+        $hours = $interval->h + ($interval->days * 24);
+        
+        if ($hours > 4) {
+            $this->sendError('Applications can only be updated within 4 hours of submission', 403);
+        }
+        
+        $data = json_decode(file_get_contents("php://input"), true) ?? [];
+        $updateData = [];
+        
+        if (isset($data['cover_letter'])) {
+            $updateData['cover_letter'] = $data['cover_letter'];
+        }
+        if (isset($data['expected_salary'])) {
+            $updateData['expected_salary'] = $data['expected_salary'];
+        }
+        
+        if (empty($updateData)) {
+            $this->sendError('No data to update', 400);
+        }
+        
+        $stmt = $this->conn->prepare("UPDATE job_applications SET cover_letter = COALESCE(:cover_letter, cover_letter), expected_salary = COALESCE(:expected_salary, expected_salary) WHERE application_id = :application_id");
+        $stmt->execute([
+            ':cover_letter' => $updateData['cover_letter'] ?? null,
+            ':expected_salary' => $updateData['expected_salary'] ?? null,
+            ':application_id' => $application_id
+        ]);
+        
+        $this->sendSuccess(null, 'Application updated successfully');
     }
 
     private function withdrawApplication(): void {

@@ -22,9 +22,21 @@ export default function CompanyDashboard() {
       ])
       setDashboard(dashData)
       setJobs(jobsData.jobs)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load dashboard:', error)
-      toast.error('Failed to load dashboard data')
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to load dashboard data'
+      if (errorMessage.includes('Company profile not found')) {
+        toast.error('Please complete your company profile first')
+      } else {
+        toast.error(errorMessage)
+      }
+      // Still try to load jobs even if dashboard fails
+      try {
+        const jobsData = await companyService.getMyJobs(1, 10)
+        setJobs(jobsData.jobs)
+      } catch (jobsError) {
+        console.error('Failed to load jobs:', jobsError)
+      }
     } finally {
       setLoading(false)
     }
