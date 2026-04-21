@@ -58,6 +58,12 @@ export default function CompanyProfilePage() {
     }
   }
 
+  const getImageUrl = (path?: string) => {
+    if (!path) return null
+    if (path.startsWith('http')) return path
+    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost/JobPortal/JobPortal/backend'}${path}`
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -85,7 +91,7 @@ export default function CompanyProfilePage() {
           <div className="flex items-center gap-6">
             <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
               {formData.logo_path ? (
-                <img src={formData.logo_path} alt="Logo" className="w-full h-full object-cover" />
+                <img src={getImageUrl(formData.logo_path) || ''} alt="Logo" className="w-full h-full object-cover" />
               ) : (
                 <Building2 className="h-12 w-12 text-gray-400" />
               )}

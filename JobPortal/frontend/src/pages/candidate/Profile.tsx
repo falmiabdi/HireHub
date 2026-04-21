@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, Phone, MapPin, GraduationCap, Briefcase, FileText, Upload, Loader2, Save, ArrowLeft } from 'lucide-react'
+import { User, Phone, MapPin, GraduationCap, Briefcase, FileText, Upload, Loader2, Save, ArrowLeft, Camera } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { candidateService, type CandidateProfile } from '../../services/candidate.service'
 
@@ -10,6 +10,7 @@ export default function CandidateProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploadingResume, setUploadingResume] = useState(false)
+  const [uploadingProfileImage, setUploadingProfileImage] = useState(false)
   const [formData, setFormData] = useState<Partial<CandidateProfile>>({})
 
   useEffect(() => {
@@ -57,6 +58,28 @@ export default function CandidateProfilePage() {
     }
   }
 
+  const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingProfileImage(true)
+    try {
+      const result = await candidateService.uploadProfileImage(file)
+      setFormData(prev => ({ ...prev, profile_image: result.profile_image }))
+      toast.success('Profile picture uploaded successfully')
+    } catch {
+      toast.error('Failed to upload profile picture')
+    } finally {
+      setUploadingProfileImage(false)
+    }
+  }
+
+  const getImageUrl = (path?: string) => {
+    if (!path) return null
+    if (path.startsWith('http')) return path
+    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost/JobPortal/JobPortal/backend'}${path}`
+  }
+
   const handleChange = (field: keyof CandidateProfile, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
@@ -83,8 +106,32 @@ export default function CandidateProfilePage() {
         <div className="space-y-6">
           <div className="rounded-lg border bg-white p-6 shadow-sm">
             <div className="mb-4 flex flex-col items-center">
-              <div className="mb-3 flex h-24 w-24 items-center justify-center rounded-full bg-blue-100">
-                <User className="h-12 w-12 text-blue-600" />
+              <div className="relative mb-3">
+                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-blue-100 overflow-hidden">
+                  {formData.profile_image ? (
+                    <img
+                      src={getImageUrl(formData.profile_image)}
+                      alt="Profile"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-12 w-12 text-blue-600" />
+                  )}
+                </div>
+                <label className="absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-600 text-white shadow-md hover:bg-blue-700">
+                  {uploadingProfileImage ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleProfileImageUpload}
+                    disabled={uploadingProfileImage}
+                  />
+                </label>
               </div>
               <h2 className="text-lg font-semibold text-gray-900">{profile?.full_name || 'Candidate'}</h2>
               <p className="text-sm text-gray-500">Job Seeker</p>

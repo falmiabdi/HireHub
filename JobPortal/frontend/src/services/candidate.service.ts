@@ -50,7 +50,7 @@ export interface CandidateProfile {
   summary?: string
   skills?: string
   resume_path?: string
-  profile_picture?: string
+  profile_image?: string
 }
 
 export const candidateService = {
@@ -96,6 +96,14 @@ export const candidateService = {
     const formData = new FormData()
     formData.append('resume', file)
     return api.post('/candidate.php?action=upload_resume', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data.data)
+  },
+
+  uploadProfileImage(file: File): Promise<{ profile_image: string }> {
+    const formData = new FormData()
+    formData.append('profile_image', file)
+    return api.post('/candidate.php?action=upload_profile_image', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then(r => r.data.data)
   },

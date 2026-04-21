@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Navbar from './components/common/Navbar'
 import Footer from './components/common/Footer'
+import Sidebar from './components/common/Sidebar'
 import Home from './pages/public/Home'
 import Jobs from './pages/public/Jobs'
 import JobDetail from './pages/public/JobDetail'
@@ -15,10 +16,13 @@ import AdminDashboard from './pages/admin/Dashboard'
 import AdminJobs from './pages/admin/Jobs'
 import CompanyDashboard from './pages/company/Dashboard'
 import CompanyProfile from './pages/company/Profile'
+import CompanyJobs from './pages/company/Jobs'
 import PostJob from './pages/company/PostJob'
 import CandidateDashboard from './pages/candidate/Dashboard'
 import CandidateProfile from './pages/candidate/Profile'
 import type { ReactNode } from 'react'
+import { useState } from 'react'
+import { Menu, Bell } from 'lucide-react'
 import './index.css'
 function ProtectedRoute({
   children,
@@ -35,22 +39,57 @@ function ProtectedRoute({
 }
 
 function App() {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
   return (
     <Router>
       <AuthProvider>
         <Toaster position="top-right" />
-        <div className="min-h-screen bg-gray-50">
-          <Navbar />
-          <main>
+        <AppLayout sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      </AuthProvider>
+    </Router>
+  )
+}
+
+function AppLayout({ sidebarOpen, setSidebarOpen }: { sidebarOpen: boolean; setSidebarOpen: (open: boolean) => void }) {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {user ? (
+        // Authenticated Layout - with Sidebar
+        <div className="flex min-h-screen">
+          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Top Bar */}
+            <header className="bg-white border-b px-4 py-3 flex items-center justify-between lg:hidden">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 rounded-lg hover:bg-gray-100"
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+              <h1 className="font-semibold text-gray-900">HireHub</h1>
+              <button className="p-2 rounded-lg hover:bg-gray-100">
+                <Bell className="h-6 w-6" />
+              </button>
+            </header>
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <DashboardRedirect />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/jobs/:id" element={<JobDetail />} />
               <Route path="/companies" element={<Companies />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
               <Route
                 path="/admin"
                 element={
@@ -72,6 +111,14 @@ function App() {
                 element={
                   <ProtectedRoute roles={['company']}>
                     <CompanyDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/company/jobs"
+                element={
+                  <ProtectedRoute roles={['company']}>
+                    <CompanyJobs />
                   </ProtectedRoute>
                 }
               />
@@ -107,13 +154,44 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        </div>
+      ) : (
+        // Public Layout - with Navbar and Footer
+        <>
+          <Navbar />
+          <main>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/jobs" element={<Jobs />} />
+              <Route path="/jobs/:id" element={<JobDetail />} />
+              <Route path="/companies" element={<Companies />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
           <Footer />
-        </div>
-      </AuthProvider>
-    </Router>
+        </>
+      )}
+    </div>
   )
+}
+
+function DashboardRedirect() {
+  const { user } = useAuth()
+  if (!user) return <Navigate to="/login" replace />
+  
+  switch (user.role) {
+    case 'admin': return <Navigate to="/admin" replace />
+    case 'company': return <Navigate to="/company" replace />
+    case 'candidate': return <Navigate to="/candidate" replace />
+    default: return <Navigate to="/" replace />
+  }
 }
 
 export default App

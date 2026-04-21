@@ -12,6 +12,7 @@ CREATE TABLE users (
     reset_token VARCHAR(255),
     reset_expires DATETIME,
     last_login DATETIME,
+    profile_image VARCHAR(500),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_email (email),
@@ -27,6 +28,7 @@ CREATE TABLE candidate_profiles (
     location VARCHAR(255),
     skills TEXT,
     resume_path VARCHAR(500),
+    profile_image VARCHAR(500),
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
@@ -88,6 +90,6 @@ CREATE TABLE job_applications (
 
 INSERT INTO users (email, password_hash, role, status, email_verified)
 VALUES
-('admin@jobportal.com', '$2b$10$UWYWtrmkAOzdbgV37.XSI.PfT0xDBpgny8ykAkihn5wr.9DroGLma', 'admin', 'active', TRUE),
+('falmitesfaye@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 'active', TRUE),
 ('company@techcorp.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'company', 'active', TRUE),
 ('candidate@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'candidate', 'active', TRUE);

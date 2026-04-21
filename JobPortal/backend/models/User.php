@@ -109,4 +109,9 @@ class User {
         $stmt = $this->conn->query("SELECT DATE_FORMAT(created_at, '{$groupBy}') as period, COUNT(*) as total FROM {$this->table} GROUP BY period ORDER BY period ASC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function updateProfileImage(int $userId, string $profileImage): bool {
+        $stmt = $this->conn->prepare("UPDATE {$this->table} SET profile_image = :profile_image WHERE user_id = :id");
+        return $stmt->execute([":profile_image" => $profileImage, ":id" => $userId]);
+    }
 }

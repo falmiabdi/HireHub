@@ -122,6 +122,14 @@ export const adminService = {
   updateUserStatus(userId: number, status: string): Promise<void> {
     return api.put('/admin.php?action=update_user_status', { user_id: userId, status })
   },
+
+  uploadProfileImage(file: File): Promise<{ profile_image: string }> {
+    const formData = new FormData()
+    formData.append('profile_image', file)
+    return api.post('/admin.php?action=upload_profile_image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data.data)
+  },
 }
 
 interface Company {

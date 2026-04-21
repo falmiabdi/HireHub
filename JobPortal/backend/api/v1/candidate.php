@@ -54,6 +54,7 @@ class CandidateAPI {
                 if ($action === 'apply') $this->applyForJob();
                 elseif ($action === 'save_job') $this->saveJob();
                 elseif ($action === 'upload_resume') $this->uploadResume();
+                elseif ($action === 'upload_profile_image') $this->uploadProfileImage();
                 else $this->sendError('Invalid action', 400);
                 break;
             case 'PUT':
@@ -140,7 +141,11 @@ class CandidateAPI {
     }
 
     private function getProfile(): void {
-        $this->sendSuccess(['profile' => $this->candidate_model->getByUserId($this->user_id)]);
+        $profile = $this->candidate_model->getByUserId($this->user_id);
+        if ($profile && isset($profile['profile_image'])) {
+            $profile['profile_image'] = $profile['profile_image'];
+        }
+        $this->sendSuccess(['profile' => $profile]);
     }
 
     private function updateProfile(): void {
@@ -165,6 +170,31 @@ class CandidateAPI {
             $resume_path = '/uploads/resumes/' . $filename;
             $this->candidate_model->update($this->candidate_id, ['resume_path' => $resume_path]);
             $this->sendSuccess(['resume_path' => $resume_path], 'Resume uploaded successfully');
+        }
+        $this->sendError('Failed to upload file', 500);
+    }
+
+    private function uploadProfileImage(): void {
+        if (!isset($_FILES['profile_image']) || $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
+            $this->sendError('No file uploaded or upload error', 400);
+        }
+        $allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+        if (!in_array($_FILES['profile_image']['type'], $allowed_types, true)) {
+            $this->sendError('Only JPEG, PNG, and WebP images are allowed', 400);
+        }
+        $max_size = 5 * 1024 * 1024; // 5MB
+        if ($_FILES['profile_image']['size'] > $max_size) {
+            $this->sendError('File size exceeds 5MB limit', 400);
+        }
+        $upload_dir = __DIR__ . '/../../uploads/profile_images/';
+        if (!file_exists($upload_dir)) mkdir($upload_dir, 0777, true);
+        $extension = pathinfo($_FILES['profile_image']['name'], PATHINFO_EXTENSION);
+        $filename = 'candidate_' . $this->candidate_id . '_' . time() . '.' . $extension;
+        $filepath = $upload_dir . $filename;
+        if (move_uploaded_file($_FILES['profile_image']['tmp_name'], $filepath)) {
+            $profile_image = '/uploads/profile_images/' . $filename;
+            $this->candidate_model->update($this->candidate_id, ['profile_image' => $profile_image]);
+            $this->sendSuccess(['profile_image' => $profile_image], 'Profile image uploaded successfully');
         }
         $this->sendError('Failed to upload file', 500);
     }

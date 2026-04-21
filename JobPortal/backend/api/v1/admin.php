@@ -13,6 +13,7 @@ class AdminAPI {
     private Job $job_model;
     private Application $application_model;
     private ActivityLog $activity_model;
+    private int $admin_id;
 
     public function __construct() {
         $this->user_model = new User();
@@ -25,6 +26,7 @@ class AdminAPI {
         if ($user['role'] !== 'admin') {
             $this->sendError('Access denied. Admin role required.', 403);
         }
+        $this->admin_id = (int) $user['user_id'];
     }
 
     public function handleRequest(): void {
@@ -52,6 +54,10 @@ class AdminAPI {
             case 'DELETE':
                 if ($action === 'delete_user') $this->deleteUser();
                 elseif ($action === 'delete_job') $this->deleteJob();
+                else $this->sendError('Invalid action', 400);
+                break;
+            case 'POST':
+                if ($action === 'upload_profile_image') $this->uploadProfileImage();
                 else $this->sendError('Invalid action', 400);
                 break;
             default:
@@ -209,6 +215,31 @@ class AdminAPI {
         $logs = $this->activity_model->getAll($limit, $offset, $action);
         $total = $this->activity_model->countAll($action);
         $this->sendSuccess(compact('logs', 'total', 'page', 'limit'));
+    }
+
+    private function uploadProfileImage(): void {
+        if (!isset($_FILES['profile_image']) || $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
+            $this->sendError('No file uploaded or upload error', 400);
+        }
+        $allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+        if (!in_array($_FILES['profile_image']['type'], $allowed_types, true)) {
+            $this->sendError('Only JPEG, PNG, and WebP images are allowed', 400);
+        }
+        $max_size = 5 * 1024 * 1024; // 5MB
+        if ($_FILES['profile_image']['size'] > $max_size) {
+            $this->sendError('File size exceeds 5MB limit', 400);
+        }
+        $upload_dir = __DIR__ . '/../../uploads/profile_images/';
+        if (!file_exists($upload_dir)) mkdir($upload_dir, 0777, true);
+        $extension = pathinfo($_FILES['profile_image']['name'], PATHINFO_EXTENSION);
+        $filename = 'admin_' . $this->admin_id . '_' . time() . '.' . $extension;
+        $filepath = $upload_dir . $filename;
+        if (move_uploaded_file($_FILES['profile_image']['tmp_name'], $filepath)) {
+            $profile_image = '/uploads/profile_images/' . $filename;
+            $this->user_model->updateProfileImage($this->admin_id, $profile_image);
+            $this->sendSuccess(['profile_image' => $profile_image], 'Profile image uploaded successfully');
+        }
+        $this->sendError('Failed to upload file', 500);
     }
 
     private function sendSuccess($data, string $message = 'Success'): void {

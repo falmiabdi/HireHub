@@ -3,6 +3,7 @@ export interface User {
   email: string
   role: 'admin' | 'company' | 'candidate'
   status: 'active' | 'inactive' | 'banned'
+  profile_image?: string
 }
 
 export interface Job {

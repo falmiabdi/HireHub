@@ -18,6 +18,7 @@ export interface Job {
   experience_level: string
   salary_range?: string
   status: string
+  approval_status: 'pending' | 'approved' | 'rejected'
   posted_at: string
   application_count?: number
 }

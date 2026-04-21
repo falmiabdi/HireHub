@@ -114,6 +114,7 @@ class AuthAPI {
                 "email" => $user["email"],
                 "role" => $user["role"],
                 "status" => $user["status"],
+                "profile_image" => $user["profile_image"] ?? null,
                 "profile" => $profile,
             ],
         ], "Login successful");

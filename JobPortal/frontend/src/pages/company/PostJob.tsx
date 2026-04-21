@@ -16,6 +16,8 @@ export default function PostJob() {
     experience_level: 'entry',
     salary_min: '',
     salary_max: '',
+    skills_required: '',
+    benefits: '',
     deadline: '',
   })
 
@@ -198,6 +200,36 @@ export default function PostJob() {
             onChange={e => handleChange('requirements', e.target.value)}
             className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="List the required skills, qualifications, and experience...&#10;e.g.,&#10;- 3+ years of JavaScript experience&#10;- Bachelor's degree in Computer Science&#10;- Experience with React and Node.js"
+          />
+        </div>
+
+        {/* Skills Required */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <List className="h-5 w-5" />
+            Skills Required
+          </h2>
+          <textarea
+            rows={3}
+            value={formData.skills_required}
+            onChange={e => handleChange('skills_required', e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="List specific skills required for this role...&#10;e.g., JavaScript, React, Node.js, MySQL"
+          />
+        </div>
+
+        {/* Benefits */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Benefits
+          </h2>
+          <textarea
+            rows={3}
+            value={formData.benefits}
+            onChange={e => handleChange('benefits', e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="List benefits offered...&#10;e.g.,&#10;- Health insurance&#10;- Remote work flexibility&#10;- Professional development budget"
           />
         </div>
 
